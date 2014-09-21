@@ -1,0 +1,56 @@
+---
+title: "README"
+output: html_document
+---
+
+This part of the code imports all of the variables I used:
+
+```{r eval = FALSE}
+activityNames <- read.table("activity_labels.txt",col.names=c("ActivityNumber,activityName"))
+featureNames <- as.character(read.table("features.txt")$V2)
+
+xTest <- read.table("test/X_test.txt")
+subTest <- read.table("test/subject_test.txt",colClasses="factor")
+yTest <- read.table("test/y_test.txt",colClasses="factor")
+
+xTrain <- read.table("train/X_train.txt")
+subTrain <- read.table("train/subject_train.txt",colClasses="factor")
+yTrain <- read.table("train/y_train.txt",colClasses="factor")
+```
+
+I combined all of the data into one big dataset:
+
+```{r eval = FALSE}
+testData <- cbind(subTest,yTest,xTest)
+trainData <- cbind(subTrain,yTrain,xTrain)
+allData <- rbind(testData,trainData)
+```
+
+Named all of the columns and added a column with the activity names:
+
+```{r eval=FALSE}
+names(allData) <- c("Subject","ActivityNumber",featureNames)
+meanStDevIndices <- grep("mean|std",featureNames) + 2
+allDataAndNames <- merge(allData,activityNames,sort=FALSE)
+```
+
+Split up the data by subject and activity performed:
+
+```{r eval = FALSE}
+Subject <- allDataAndNames$Subject
+ActivityName <- allDataAndNames$ActivityNumber.activityName
+tidyData <- split(allDataAndNames[,meanStDevIndices],paste(Subject,ActivityName))
+```
+
+Applied colmeans to all of the columns to get the means for each feature within each activity:
+
+```{r eval = FALSE}
+Result <- sapply(tidyData,colMeans)
+```
+
+Wrote out results:
+
+```{r eval = FALSE}
+write.table(Result,"result.txt",row.name=FALSE)
+write.table(rownames(Result),"resultRows.txt")
+```
